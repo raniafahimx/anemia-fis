@@ -1,0 +1,3074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HemaLogic — Anemia Fuzzy Intelligence System</title>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,700;1,700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=chillax@300,400,500,600,700&f[]=synonym@400,500,600,700&f[]=cabinet-grotesk@700,800&display=swap" />
+
+<style>
+/* ═══════════════════════════════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════════════════════════════ */
+:root {
+  --crimson:    #AA4A44;
+  --coral:      #F88379;
+  --maroon:     #7B1818;
+  --burnt:      #E97451;
+  --white:      #FFFFFF;
+  --cream:      #FDF8F5;
+  --light-pink: #FDE8E6;
+  --dark-maroon:#4A0E0E;
+  --mid-gray:   #8B6B6B;
+  --bg:         #FDFAF9;
+
+  --font-display: 'Crimson Pro', Georgia, serif;
+  --font-body:    'Chillax', sans-serif;
+  --font-mono:    'Synonym', sans-serif;
+  --font-heading: 'Cabinet Grotesk', sans-serif;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
+}
+
+/* ═══════════════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; overflow-x: hidden; }
+
+body {
+  font-family: var(--font-body);
+  font-weight: 300;
+  background: var(--bg);
+  color: var(--maroon);
+  overflow-x: hidden;
+  cursor: auto;
+}
+
+/* ═══════════════════════════════════════════════════════
+   CUSTOM CURSOR — REMOVED
+═══════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════════════════ */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  padding: 1.25rem 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background 0.4s var(--ease-out), backdrop-filter 0.4s;
+}
+nav.scrolled {
+  background: rgba(253,250,249,0.92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(170,74,68,0.12);
+  box-shadow: 0 2px 40px rgba(123,24,24,0.06);
+}
+.nav-logo {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--white);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+  transition: color 0.3s;
+}
+nav.scrolled .nav-logo { color: var(--maroon); }
+
+.nav-pill {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: rgba(255,255,255,0.12);
+  border: 1.5px solid rgba(255,255,255,0.25);
+  border-radius: 999px;
+  padding: 0.35rem;
+  backdrop-filter: blur(12px);
+  gap: 0;
+  transition: background 0.4s, border-color 0.4s;
+}
+nav.scrolled .nav-pill {
+  background: rgba(255,255,255,0.9);
+  border-color: rgba(170,74,68,0.2);
+}
+
+.nav-indicator {
+  position: absolute;
+  height: calc(100% - 0.7rem);
+  background: var(--maroon);
+  border-radius: 999px;
+  top: 0.35rem;
+  left: 0.35rem;
+  transition: left 0.35s var(--ease-out), width 0.35s var(--ease-out), opacity 0.2s;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.nav-tab {
+  position: relative;
+  z-index: 2;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--white);
+  padding: 0.5rem 1.25rem;
+  border-radius: 999px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  transition: color 0.25s;
+  white-space: nowrap;
+  mix-blend-mode: difference;
+}
+nav.scrolled .nav-tab { color: var(--maroon); mix-blend-mode: normal; }
+nav.scrolled .nav-indicator { background: var(--crimson); }
+
+.nav-cta {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--maroon);
+  background: var(--white);
+  padding: 0.55rem 1.4rem;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.25s, transform 0.2s;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.nav-cta:hover { background: var(--cream); transform: scale(1.03); }
+nav.scrolled .nav-cta { background: var(--crimson); color: var(--white); }
+
+/* Mobile nav toggle */
+.nav-hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0.4rem;
+}
+.nav-hamburger span {
+  width: 24px; height: 2px;
+  background: var(--white);
+  border-radius: 2px;
+  transition: transform 0.3s, opacity 0.3s;
+  display: block;
+}
+nav.scrolled .nav-hamburger span { background: var(--maroon); }
+
+@media (max-width: 768px) {
+  nav { padding: 1rem 1.5rem; }
+  .nav-pill, .nav-cta { display: none; }
+  .nav-hamburger { display: flex; }
+  .nav-mobile {
+    position: fixed;
+    top: 0; right: -100%;
+    width: 280px; height: 100vh;
+    background: var(--maroon);
+    padding: 5rem 2rem 2rem;
+    transition: right 0.4s var(--ease-out);
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .nav-mobile.open { right: 0; }
+  .nav-mobile button {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    font-weight: 400;
+    color: var(--white);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    padding: 0;
+    letter-spacing: -0.02em;
+  }
+  .nav-mobile-close {
+    position: absolute;
+    top: 1.5rem; right: 1.5rem;
+    background: none; border: none;
+    color: var(--white); font-size: 1.5rem;
+    cursor: pointer;
+  }
+  .nav-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 998;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .nav-overlay.open { opacity: 1; pointer-events: all; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   PAGE SYSTEM
+═══════════════════════════════════════════════════════ */
+.page {
+  display: none;
+  min-height: 100vh;
+  opacity: 0;
+  transform: translateX(40px);
+  transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out);
+}
+.page.active {
+  display: block;
+  opacity: 1;
+  transform: translateX(0);
+}
+.page.exit {
+  opacity: 0;
+  transform: translateX(-40px);
+}
+
+/* ═══════════════════════════════════════════════════════
+   PAGE 1 — HOME
+═══════════════════════════════════════════════════════ */
+
+/* Hero */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  background: url('images/red_banner.jpeg') center/cover no-repeat;
+  /* Fallback gradient if image isn't available */
+  background-color: var(--dark-maroon);
+}
+/* We'll use a CSS-generated visual background as fallback */
+.hero-bg::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 80% at 70% 50%, rgba(170,74,68,0.3) 0%, transparent 70%),
+    linear-gradient(135deg, rgba(74,14,14,0.98) 0%, rgba(123,24,24,0.92) 40%, rgba(170,74,68,0.85) 100%);
+  z-index: 1;
+}
+.hero-bg::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, transparent 60%, rgba(253,250,249,0.15) 100%);
+  z-index: 2;
+}
+
+/* Animated blood cell particles */
+.hero-particles {
+  position: absolute; inset: 0;
+  z-index: 3;
+  overflow: hidden;
+  pointer-events: none;
+}
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  animation: float-particle linear infinite;
+  opacity: 0;
+}
+@keyframes float-particle {
+  0%   { opacity: 0; transform: translateY(100vh) scale(0.5); }
+  10%  { opacity: 0.15; }
+  90%  { opacity: 0.08; }
+  100% { opacity: 0; transform: translateY(-20vh) scale(1.2); }
+}
+
+.hero-content {
+  position: relative;
+  z-index: 10;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 8rem 3rem 4rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+  width: 100%;
+}
+
+.hero-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--coral);
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  opacity: 0;
+  animation: fadeSlideUp 0.8s var(--ease-out) 0.3s forwards;
+}
+.hero-eyebrow::before {
+  content: '';
+  width: 40px; height: 1px;
+  background: var(--coral);
+}
+
+.hero-title {
+  font-family: var(--font-heading);
+  font-size: clamp(3rem, 8vw, 7.5rem);
+  font-weight: 800;
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+  color: var(--white);
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  text-transform: uppercase;
+  animation: fadeSlideUp 0.9s var(--ease-out) 0.5s forwards;
+}
+.hero-title em {
+  font-style: italic;
+  color: var(--coral);
+}
+.hero-title strong {
+  font-weight: 600;
+  display: block;
+}
+
+.hero-subtitle {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: rgba(255,255,255,0.72);
+  max-width: 480px;
+  margin-bottom: 2.5rem;
+  opacity: 0;
+  animation: fadeSlideUp 0.9s var(--ease-out) 0.7s forwards;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  opacity: 0;
+  animation: fadeSlideUp 0.9s var(--ease-out) 0.9s forwards;
+}
+
+.btn-primary {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--white);
+  color: var(--maroon);
+  padding: 0.9rem 2rem;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.25s var(--ease-out), box-shadow 0.25s;
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: var(--coral);
+  transform: translateX(-101%);
+  transition: transform 0.35s var(--ease-out);
+  z-index: 0;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(123,24,24,0.35); }
+.btn-primary:hover::before { transform: translateX(0); }
+.btn-primary span { position: relative; z-index: 1; }
+.btn-primary:hover span { color: var(--white); }
+
+.btn-outline {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: transparent;
+  color: var(--white);
+  padding: 0.9rem 2rem;
+  border-radius: 4px;
+  border: 1.5px solid rgba(255,255,255,0.4);
+  cursor: pointer;
+  transition: border-color 0.25s, background 0.25s, transform 0.25s;
+}
+.btn-outline:hover {
+  border-color: var(--white);
+  background: rgba(255,255,255,0.08);
+  transform: translateY(-2px);
+}
+
+/* Hero 3D RBC visual */
+.hero-3d {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  animation: fadeIn 1.2s var(--ease-out) 0.6s forwards;
+}
+
+.rbc-3d-wrapper {
+  position: relative;
+  width: 380px; height: 380px;
+}
+
+.rbc-main {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 220px; height: 220px;
+  background: radial-gradient(ellipse 70% 70% at 38% 38%, rgba(248,131,121,0.9), rgba(170,74,68,0.8) 60%, rgba(123,24,24,0.95));
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 2px rgba(248,131,121,0.3),
+    0 0 60px rgba(170,74,68,0.5),
+    inset 0 -30px 60px rgba(74,14,14,0.6);
+  animation: rbc-float 4s ease-in-out infinite;
+}
+.rbc-main::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 100px; height: 100px;
+  background: radial-gradient(ellipse, rgba(74,14,14,0.6), transparent 70%);
+  border-radius: 50%;
+}
+.rbc-main::before {
+  content: '';
+  position: absolute;
+  top: 15%; left: 20%;
+  width: 50px; height: 30px;
+  background: radial-gradient(ellipse, rgba(255,255,255,0.25), transparent 70%);
+  border-radius: 50%;
+  transform: rotate(-30deg);
+}
+
+@keyframes rbc-float {
+  0%, 100% { transform: translate(-50%,-50%) translateY(0) rotateX(0deg); }
+  33%       { transform: translate(-50%,-50%) translateY(-12px) rotateX(8deg) rotateZ(5deg); }
+  66%       { transform: translate(-50%,-50%) translateY(8px) rotateX(-5deg) rotateZ(-3deg); }
+}
+
+.rbc-orbit {
+  position: absolute; inset: 0;
+  border: 1px dashed rgba(248,131,121,0.2);
+  border-radius: 50%;
+  animation: orbit-spin 12s linear infinite;
+}
+.rbc-orbit-2 {
+  inset: 20px;
+  border-color: rgba(248,131,121,0.12);
+  animation-duration: 18s;
+  animation-direction: reverse;
+}
+
+@keyframes orbit-spin { to { transform: rotate(360deg); } }
+
+.rbc-satellite {
+  position: absolute;
+  width: 18px; height: 18px;
+  background: radial-gradient(var(--coral), var(--crimson));
+  border-radius: 50%;
+  top: 0; left: 50%;
+  transform: translate(-50%, -9px);
+  box-shadow: 0 0 15px rgba(248,131,121,0.5);
+}
+.rbc-satellite-2 {
+  width: 10px; height: 10px;
+  background: radial-gradient(var(--burnt), var(--crimson));
+  top: auto; bottom: 0;
+  transform: translate(-50%, 5px);
+}
+
+.rbc-ring {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotateX(75deg);
+  width: 280px; height: 280px;
+  border: 2px solid rgba(248,131,121,0.15);
+  border-radius: 50%;
+  animation: ring-pulse 3s ease-in-out infinite;
+}
+@keyframes ring-pulse {
+  0%, 100% { opacity: 0.4; transform: translate(-50%,-50%) rotateX(75deg) scale(1); }
+  50%       { opacity: 0.8; transform: translate(-50%,-50%) rotateX(75deg) scale(1.04); }
+}
+
+.hero-stats {
+  position: absolute;
+  bottom: -40px; left: 0; right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  opacity: 0;
+  animation: fadeSlideUp 0.9s var(--ease-out) 1.1s forwards;
+}
+.stat-card {
+  flex: 1;
+  max-width: 200px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  backdrop-filter: blur(16px);
+  padding: 1.25rem 1.5rem;
+  text-align: center;
+  border-right: none;
+  transition: background 0.3s;
+}
+.stat-card:first-child { border-radius: 8px 0 0 8px; }
+.stat-card:last-child  { border-radius: 0 8px 8px 0; border-right: 1px solid rgba(255,255,255,0.12); }
+.stat-card:hover { background: rgba(255,255,255,0.1); }
+.stat-number {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--coral);
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+.stat-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+  font-family: var(--font-mono);
+}
+
+/* Scroll indicator */
+.scroll-indicator {
+  position: absolute;
+  bottom: 2rem; left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  opacity: 0;
+  animation: fadeIn 1s var(--ease-out) 1.5s forwards;
+}
+.scroll-line {
+  width: 1px; height: 50px;
+  background: linear-gradient(to bottom, var(--coral), transparent);
+  animation: scroll-bounce 2s ease-in-out infinite;
+}
+@keyframes scroll-bounce {
+  0%, 100% { transform: scaleY(1); opacity: 0.6; }
+  50%       { transform: scaleY(1.3); opacity: 1; }
+}
+.scroll-text {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  writing-mode: vertical-rl;
+}
+
+/* Scroll text animation strip */
+.scroll-text-strip {
+  background: var(--maroon);
+  overflow: hidden;
+  padding: 1rem 0;
+  margin-top: 0;
+}
+.scroll-text-inner {
+  display: flex;
+  gap: 3rem;
+  animation: marquee 25s linear infinite;
+  white-space: nowrap;
+}
+.scroll-text-inner span {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--coral);
+  flex-shrink: 0;
+}
+.scroll-text-inner span.sep {
+  color: rgba(248,131,121,0.35);
+  letter-spacing: 0;
+}
+@keyframes marquee { to { transform: translateX(-50%); } }
+
+/* About Anemia section */
+.section {
+  padding: 7rem 3rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.section-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--crimson);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.section-eyebrow::before {
+  content: '';
+  width: 30px; height: 1px;
+  background: var(--crimson);
+}
+
+.section-title {
+  font-family: var(--font-heading);
+  font-size: clamp(2.2rem, 4vw, 3.8rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--maroon);
+  margin-bottom: 2rem;
+  text-transform: uppercase;
+}
+.section-title em { font-style: italic; color: var(--crimson); }
+.section-title u { text-decoration-color: var(--coral); text-underline-offset: 6px; }
+.section-title strong { font-weight: 700; }
+
+/* What is anemia — split layout */
+.anemia-intro {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6rem;
+  align-items: center;
+}
+.anemia-text p {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: #5C3030;
+  margin-bottom: 1.5rem;
+}
+.anemia-text p strong { color: var(--maroon); }
+
+.anemia-visual {
+  position: relative;
+}
+
+/* Hemoglobin level meter */
+.hb-meter {
+  background: var(--light-pink);
+  border-radius: 20px;
+  padding: 2rem;
+  border: 1px solid rgba(170,74,68,0.12);
+}
+.hb-meter-title {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--crimson);
+  margin-bottom: 1.5rem;
+}
+.hb-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+.hb-bar-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--maroon);
+  width: 80px;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+}
+.hb-bar-track {
+  flex: 1;
+  height: 10px;
+  background: rgba(170,74,68,0.1);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.hb-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 1.5s var(--ease-out);
+}
+.hb-bar-val {
+  font-size: 0.78rem;
+  color: var(--crimson);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  width: 55px;
+  text-align: right;
+}
+.hb-legend {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  flex-wrap: wrap;
+}
+.hb-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  color: var(--mid-gray);
+  font-family: var(--font-mono);
+}
+.hb-legend-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+
+/* Types grid */
+.types-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 5rem;
+}
+.type-card {
+  position: relative;
+  background: var(--white);
+  border: 1px solid rgba(170,74,68,0.12);
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  overflow: hidden;
+  transition: transform 0.35s var(--ease-out), box-shadow 0.35s, border-color 0.3s;
+  cursor: default;
+}
+.type-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  border-radius: 16px 16px 0 0;
+}
+.type-card.micro::before { background: linear-gradient(to right, var(--maroon), var(--crimson)); }
+.type-card.normo::before { background: linear-gradient(to right, var(--crimson), var(--coral)); }
+.type-card.macro::before { background: linear-gradient(to right, var(--coral), var(--burnt)); }
+
+.type-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 24px 60px rgba(123,24,24,0.12);
+  border-color: var(--coral);
+}
+
+.type-card-bg {
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  opacity: 0.04;
+  background: var(--crimson);
+  transition: opacity 0.3s;
+}
+.type-card:hover .type-card-bg { opacity: 0.08; }
+
+.type-tag {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  background: var(--light-pink);
+  color: var(--crimson);
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  display: inline-block;
+  margin-bottom: 1.25rem;
+  border: 1px solid rgba(170,74,68,0.15);
+}
+.type-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+.type-card h3 {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--maroon);
+  margin-bottom: 0.5rem;
+  line-height: 1.15;
+}
+.type-card h4 {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--crimson);
+  margin-bottom: 1rem;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+}
+.type-card p {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: #6B3F3F;
+}
+.type-card ul {
+  list-style: none;
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.type-card ul li {
+  font-size: 0.82rem;
+  color: var(--crimson);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+}
+.type-card ul li::before { content: '→'; color: var(--coral); }
+
+/* CBC Parameters section */
+.cbc-section {
+  background: linear-gradient(135deg, var(--maroon) 0%, var(--dark-maroon) 100%);
+  padding: 7rem 3rem;
+  position: relative;
+  overflow: hidden;
+}
+.cbc-section::before {
+  content: '';
+  position: absolute;
+  top: -200px; right: -200px;
+  width: 600px; height: 600px;
+  background: radial-gradient(ellipse, rgba(248,131,121,0.08) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.cbc-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 5rem;
+  align-items: center;
+}
+.cbc-section .section-title { color: var(--white); }
+.cbc-section .section-title em { color: var(--coral); }
+.cbc-section .section-eyebrow { color: var(--coral); }
+.cbc-section .section-eyebrow::before { background: var(--coral); }
+
+.cbc-text { color: rgba(255,255,255,0.7); font-size: 1rem; line-height: 1.75; }
+
+.param-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.param-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 1.75rem 1.5rem;
+  transition: background 0.3s, border-color 0.3s, transform 0.3s;
+  cursor: default;
+}
+.param-card:hover {
+  background: rgba(255,255,255,0.09);
+  border-color: rgba(248,131,121,0.3);
+  transform: scale(1.02);
+}
+.param-abbr {
+  font-family: var(--font-mono);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--coral);
+  letter-spacing: -0.02em;
+  margin-bottom: 0.25rem;
+}
+.param-name {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 0.75rem;
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+}
+.param-range {
+  font-size: 0.85rem;
+  color: var(--white);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.param-desc {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.55);
+  line-height: 1.5;
+}
+
+/* Symptoms section */
+.symptoms-section {
+  padding: 7rem 3rem;
+  background: var(--cream);
+}
+.symptoms-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 5rem;
+  align-items: center;
+}
+.symptoms-image {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  aspect-ratio: 4/3;
+  background: linear-gradient(135deg, var(--light-pink), var(--cream));
+}
+.symptoms-image img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* Fallback visual if image not found */
+.symptoms-image-fallback {
+  position: absolute; inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  background: linear-gradient(135deg, var(--light-pink) 0%, rgba(248,131,121,0.2) 100%);
+}
+.symptoms-image-fallback .body-icon {
+  font-size: 5rem;
+  opacity: 0.3;
+}
+.symptoms-badge {
+  position: absolute;
+  top: 1.5rem; left: 1.5rem;
+  background: var(--maroon);
+  color: var(--white);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+}
+
+.symptom-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.symptom-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid rgba(170,74,68,0.1);
+  transition: transform 0.25s;
+}
+.symptom-item:hover { transform: translateX(6px); }
+.symptom-item:last-child { border-bottom: none; }
+.symptom-icon-wrap {
+  width: 36px; height: 36px;
+  background: var(--light-pink);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+  border: 1px solid rgba(170,74,68,0.15);
+}
+.symptom-text strong {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--maroon);
+  margin-bottom: 0.2rem;
+}
+.symptom-text span {
+  font-size: 0.82rem;
+  color: var(--mid-gray);
+  line-height: 1.5;
+}
+
+/* Prevalence section */
+.prevalence-section {
+  padding: 7rem 3rem;
+  background: var(--white);
+}
+.prev-inner { max-width: 1400px; margin: 0 auto; }
+.prev-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  margin-top: 4rem;
+}
+.prev-stat {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s var(--ease-out), box-shadow 0.3s;
+}
+.prev-stat:hover { transform: translateY(-6px); box-shadow: 0 20px 50px rgba(123,24,24,0.1); }
+.prev-stat.bg-1 { background: linear-gradient(135deg, var(--dark-maroon), var(--maroon)); }
+.prev-stat.bg-2 { background: linear-gradient(135deg, var(--maroon), var(--crimson)); }
+.prev-stat.bg-3 { background: linear-gradient(135deg, var(--crimson), var(--coral)); }
+.prev-stat.bg-4 { background: linear-gradient(135deg, var(--coral), var(--burnt)); }
+.prev-stat-num {
+  font-family: var(--font-display);
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: var(--white);
+  line-height: 1;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.04em;
+}
+.prev-stat-label {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.7);
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.prev-stat-sub {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.45);
+  margin-top: 0.3rem;
+}
+
+/* ═══════════════════════════════════════════════════════
+   PAGE 2 — DIAGNOSTIC TOOL
+═══════════════════════════════════════════════════════ */
+.tool-header {
+  padding: 8rem 3rem 3rem;
+  background: linear-gradient(180deg, var(--dark-maroon) 0%, var(--maroon) 100%);
+  position: relative;
+  overflow: hidden;
+}
+.tool-header::before {
+  content: '';
+  position: absolute;
+  bottom: -2px; left: 0; right: 0;
+  height: 60px;
+  background: var(--cream);
+  clip-path: ellipse(55% 100% at 50% 100%);
+}
+.tool-header-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+}
+.tool-header .section-title { color: var(--white); }
+.tool-header .section-title em { color: var(--coral); }
+.tool-header .section-eyebrow { justify-content: center; color: var(--coral); }
+.tool-header .section-eyebrow::before { display: none; }
+.tool-desc {
+  color: rgba(255,255,255,0.65);
+  font-size: 1rem;
+  line-height: 1.75;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.tool-body {
+  background: var(--cream);
+  padding: 4rem 3rem 6rem;
+}
+.tool-body-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* Input Panel */
+.input-panel {
+  background: var(--white);
+  border-radius: 20px;
+  border: 1px solid rgba(170,74,68,0.12);
+  padding: 2.5rem;
+  box-shadow: 0 4px 30px rgba(123,24,24,0.06);
+}
+.input-panel-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--maroon);
+  margin-bottom: 0.25rem;
+}
+.input-panel-sub {
+  font-size: 0.82rem;
+  color: var(--mid-gray);
+  font-family: var(--font-mono);
+  margin-bottom: 2rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+.form-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+.form-label-text {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--maroon);
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.form-label-range {
+  font-size: 0.7rem;
+  color: var(--mid-gray);
+  font-family: var(--font-mono);
+}
+.form-input {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: 1.5px solid rgba(170,74,68,0.2);
+  border-radius: 10px;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: var(--maroon);
+  background: var(--bg);
+  transition: border-color 0.25s, box-shadow 0.25s;
+  outline: none;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+.form-input::-webkit-outer-spin-button,
+.form-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.form-input:focus {
+  border-color: var(--crimson);
+  box-shadow: 0 0 0 3px rgba(170,74,68,0.1);
+}
+
+/* Range slider */
+.slider-wrap {
+  position: relative;
+}
+.form-slider {
+  width: 100%;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  outline: none;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+.form-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px; height: 18px;
+  background: var(--crimson);
+  border-radius: 50%;
+  border: 2px solid var(--white);
+  box-shadow: 0 2px 8px rgba(170,74,68,0.3);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.form-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+.slider-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.3rem;
+}
+.slider-labels span {
+  font-size: 0.65rem;
+  color: var(--mid-gray);
+  font-family: var(--font-mono);
+}
+
+.btn-diagnose {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, var(--maroon), var(--crimson));
+  color: var(--white);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.25s var(--ease-out), box-shadow 0.25s, opacity 0.2s;
+  margin-top: 0.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.btn-diagnose::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, var(--crimson), var(--coral));
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.btn-diagnose:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(123,24,24,0.3); }
+.btn-diagnose:hover::after { opacity: 1; }
+.btn-diagnose span { position: relative; z-index: 1; }
+
+.btn-reset {
+  width: 100%;
+  padding: 0.75rem;
+  background: transparent;
+  color: var(--mid-gray);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid rgba(170,74,68,0.15);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  margin-top: 0.75rem;
+}
+.btn-reset:hover { color: var(--crimson); border-color: var(--crimson); }
+
+/* Result Panel */
+.result-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.result-idle {
+  background: var(--white);
+  border-radius: 20px;
+  border: 1.5px dashed rgba(170,74,68,0.2);
+  padding: 3rem 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 300px;
+}
+.result-idle-icon { font-size: 3rem; opacity: 0.35; }
+.result-idle-text {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: var(--mid-gray);
+  font-style: italic;
+}
+.result-idle-sub {
+  font-size: 0.8rem;
+  color: rgba(107,63,63,0.5);
+  font-family: var(--font-mono);
+}
+
+.result-card {
+  background: var(--white);
+  border-radius: 20px;
+  border: 1px solid rgba(170,74,68,0.12);
+  padding: 2rem;
+  box-shadow: 0 4px 30px rgba(123,24,24,0.06);
+  display: none;
+  animation: fadeSlideUp 0.5s var(--ease-out) forwards;
+}
+.result-card.visible { display: block; }
+
+.result-verdict {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+  padding-bottom: 1.75rem;
+  border-bottom: 1px solid rgba(170,74,68,0.1);
+}
+.verdict-icon {
+  width: 52px; height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+.verdict-icon.micro { background: linear-gradient(135deg, var(--dark-maroon), var(--maroon)); }
+.verdict-icon.normo { background: linear-gradient(135deg, var(--crimson), var(--coral)); }
+.verdict-icon.macro { background: linear-gradient(135deg, var(--coral), var(--burnt)); }
+
+.verdict-text small {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--crimson);
+}
+.verdict-text h3 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--maroon);
+  margin: 0.15rem 0;
+  line-height: 1.1;
+}
+.verdict-text p {
+  font-size: 0.82rem;
+  color: var(--mid-gray);
+  font-family: var(--font-mono);
+}
+
+.score-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.score-bar-item {}
+.score-bar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+}
+.score-bar-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--maroon);
+  font-family: var(--font-mono);
+}
+.score-bar-val {
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+.score-bar-track {
+  height: 10px;
+  background: var(--light-pink);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.score-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 1.2s var(--ease-out);
+}
+.score-bar-fill.a { background: linear-gradient(to right, var(--maroon), var(--crimson)); }
+.score-bar-fill.b { background: linear-gradient(to right, var(--crimson), var(--coral)); }
+.score-bar-fill.c { background: linear-gradient(to right, var(--coral), var(--burnt)); }
+
+.result-notes {
+  background: var(--light-pink);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  border-left: 3px solid var(--crimson);
+}
+.result-notes p {
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: #5C3030;
+  font-family: var(--font-mono);
+}
+
+/* Info panel */
+.info-panel {
+  background: linear-gradient(135deg, var(--maroon), var(--dark-maroon));
+  border-radius: 20px;
+  padding: 2rem;
+  color: var(--white);
+}
+.info-panel-title {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--coral);
+  margin-bottom: 1.25rem;
+}
+.info-rows { display: flex; flex-direction: column; gap: 0.75rem; }
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.info-row:last-child { border-bottom: none; }
+.info-row-key {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.55);
+  font-family: var(--font-mono);
+}
+.info-row-val {
+  font-size: 0.85rem;
+  color: var(--white);
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+/* Disclaimer */
+.disclaimer {
+  max-width: 900px;
+  margin: 3rem auto 0;
+  background: var(--white);
+  border: 1px solid rgba(170,74,68,0.12);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+.disclaimer-icon { font-size: 1.1rem; margin-top: 0.1rem; flex-shrink: 0; }
+.disclaimer p {
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: var(--mid-gray);
+  font-family: var(--font-mono);
+}
+.disclaimer strong { color: var(--crimson); }
+
+/* ═══════════════════════════════════════════════════════
+   PAGE 3 — METHODOLOGY
+═══════════════════════════════════════════════════════ */
+.method-hero {
+  padding: 8rem 3rem 5rem;
+  background: var(--bg);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.method-hero-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6rem;
+  align-items: center;
+}
+
+.pipeline-visual {
+  position: relative;
+}
+.pipeline-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.pipeline-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  padding: 1.5rem 0;
+  position: relative;
+}
+.pipeline-step::after {
+  content: '';
+  position: absolute;
+  left: 19px;
+  top: 3.5rem;
+  width: 2px;
+  height: calc(100% - 1.5rem);
+  background: linear-gradient(to bottom, var(--crimson), rgba(170,74,68,0.1));
+}
+.pipeline-step:last-child::after { display: none; }
+.step-num {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--maroon), var(--crimson));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--white);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+.step-content h4 {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--maroon);
+  margin-bottom: 0.3rem;
+  letter-spacing: -0.01em;
+}
+.step-content p {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: #6B4040;
+}
+
+/* Rules display */
+.rules-section {
+  background: var(--white);
+  padding: 6rem 3rem;
+}
+.rules-inner { max-width: 1400px; margin: 0 auto; }
+.rules-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-top: 3rem;
+}
+.rule-card {
+  background: var(--bg);
+  border: 1px solid rgba(170,74,68,0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: border-color 0.25s, transform 0.25s var(--ease-out);
+  cursor: default;
+}
+.rule-card:hover { border-color: var(--crimson); transform: scale(1.01); }
+.rule-id {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--crimson);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.rule-id .rule-badge {
+  background: var(--light-pink);
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.6rem;
+}
+.rule-if {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--maroon);
+  line-height: 1.5;
+  margin-bottom: 0.5rem;
+}
+.rule-if .kw { color: var(--crimson); font-weight: 700; }
+.rule-if .val { color: var(--burnt); }
+.rule-then {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: #5C3030;
+  border-top: 1px solid rgba(170,74,68,0.08);
+  padding-top: 0.5rem;
+  margin-top: 0.5rem;
+}
+.rule-then .kw { color: var(--dark-maroon); font-weight: 700; }
+.rule-then .out { color: var(--crimson); }
+
+/* Impact section */
+.impact-section {
+  background: linear-gradient(180deg, var(--cream) 0%, var(--white) 100%);
+  padding: 6rem 3rem;
+}
+.impact-inner { max-width: 1400px; margin: 0 auto; }
+.impact-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin-top: 4rem;
+}
+.impact-card {
+  padding: 2.5rem 2rem;
+  border-radius: 16px;
+  border: 1px solid rgba(170,74,68,0.1);
+  background: var(--white);
+  transition: transform 0.3s var(--ease-out), box-shadow 0.3s, border-color 0.3s;
+  cursor: default;
+}
+.impact-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 24px 60px rgba(123,24,24,0.1);
+  border-color: var(--coral);
+}
+.impact-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1.25rem;
+  display: block;
+}
+.impact-card h3 {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--maroon);
+  letter-spacing: -0.02em;
+  margin-bottom: 0.75rem;
+  line-height: 1.2;
+}
+.impact-card p {
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: #6B4040;
+}
+
+/* Tech stack section */
+.tech-section {
+  background: var(--maroon);
+  padding: 5rem 3rem;
+}
+.tech-inner { max-width: 1400px; margin: 0 auto; }
+.tech-section .section-eyebrow { color: var(--coral); }
+.tech-section .section-eyebrow::before { background: var(--coral); }
+.tech-section .section-title { color: var(--white); }
+.tech-section .section-title em { color: var(--coral); }
+.tech-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 3rem;
+}
+.tech-chip {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  transition: background 0.25s, border-color 0.25s, transform 0.25s;
+  cursor: default;
+}
+.tech-chip:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(248,131,121,0.4);
+  transform: scale(1.04);
+}
+.tech-chip-name {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--coral);
+  margin-bottom: 0.15rem;
+}
+.tech-chip-role {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.45);
+  font-family: var(--font-mono);
+}
+
+/* ═══════════════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════════════ */
+footer {
+  background: var(--dark-maroon);
+  padding: 4rem 3rem 2rem;
+}
+.footer-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.footer-top {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 3rem;
+  align-items: start;
+  padding-bottom: 3rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 2rem;
+}
+.footer-brand {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  color: var(--white);
+  margin-bottom: 0.75rem;
+}
+.footer-tagline {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.45);
+  font-family: var(--font-mono);
+  max-width: 320px;
+}
+.footer-links {
+  display: flex;
+  gap: 2rem;
+}
+.footer-links button {
+  background: none;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.footer-links button:hover { color: var(--coral); }
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.footer-copy {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.3);
+  font-family: var(--font-mono);
+}
+.footer-copy strong { color: var(--coral); }
+.footer-course {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.25);
+  font-family: var(--font-mono);
+  text-align: right;
+}
+
+/* ═══════════════════════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════════════════════ */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Scroll-triggered */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
+}
+.reveal.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-30px);
+  transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
+}
+.reveal-left.in-view { opacity: 1; transform: translateX(0); }
+.reveal-right {
+  opacity: 0;
+  transform: translateX(30px);
+  transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
+}
+.reveal-right.in-view { opacity: 1; transform: translateX(0); }
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .hero-content { grid-template-columns: 1fr; gap: 3rem; padding-top: 7rem; }
+  .hero-3d { justify-content: center; }
+  .rbc-3d-wrapper { width: 300px; height: 300px; }
+  .rbc-main { width: 170px; height: 170px; }
+  .hero-stats { flex-wrap: wrap; }
+  .anemia-intro, .symptoms-inner, .cbc-inner, .method-hero-split, .tool-body-inner,
+  .footer-top { grid-template-columns: 1fr; gap: 3rem; }
+  .types-grid, .prev-stats-row { grid-template-columns: repeat(2, 1fr); }
+  .impact-grid { grid-template-columns: repeat(2, 1fr); }
+  .rules-grid { grid-template-columns: 1fr; }
+  .param-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+  .section { padding: 4rem 1.5rem; }
+  .types-grid, .prev-stats-row, .impact-grid, .param-grid { grid-template-columns: 1fr; }
+  .hero-content { padding: 6rem 1.5rem 3rem; }
+  .hero-stats { display: none; }
+  .tool-header, .tool-body, .method-hero, .rules-section,
+  .impact-section, .tech-section { padding-left: 1.5rem; padding-right: 1.5rem; }
+  .tool-body-inner { grid-template-columns: 1fr; }
+  footer { padding: 3rem 1.5rem 2rem; }
+  .footer-top { grid-template-columns: 1fr; }
+  .footer-links { flex-wrap: wrap; gap: 1rem; }
+  .footer-bottom { flex-direction: column; gap: 1rem; text-align: center; }
+  .cbc-section { padding: 4rem 1.5rem; }
+  .symptoms-section { padding: 4rem 1.5rem; }
+  .prevalence-section { padding: 4rem 1.5rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- Custom Cursor -->
+<div id="cursor" style="display:none;"></div>
+<div id="cursor-ring" style="display:none;"></div>
+
+<!-- ═══════════════════ NAVIGATION ═══════════════════ -->
+<nav id="main-nav">
+  <a href="#" class="nav-logo" onclick="showPage('home'); return false;">HemaLogic</a>
+
+  <div class="nav-pill" id="nav-pill">
+    <div class="nav-indicator" id="nav-indicator"></div>
+    <button class="nav-tab" onclick="showPage('home')" data-page="home">Home</button>
+    <button class="nav-tab" onclick="showPage('tool')" data-page="tool">Diagnose</button>
+    <button class="nav-tab" onclick="showPage('method')" data-page="method">Methodology</button>
+  </div>
+
+  <button class="nav-cta" onclick="showPage('tool')">Run Diagnosis →</button>
+
+  <button class="nav-hamburger" id="hamburger" onclick="toggleMobileNav()">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- Mobile nav -->
+<div class="nav-overlay" id="nav-overlay" onclick="toggleMobileNav()"></div>
+<div class="nav-mobile" id="nav-mobile">
+  <button class="nav-mobile-close" onclick="toggleMobileNav()">✕</button>
+  <button onclick="showPage('home'); toggleMobileNav();">Home</button>
+  <button onclick="showPage('tool'); toggleMobileNav();">Diagnose</button>
+  <button onclick="showPage('method'); toggleMobileNav();">Methodology</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE 1 — HOME
+═══════════════════════════════════════════════════════ -->
+<div class="page active" id="page-home">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-bg" id="hero-bg"></div>
+    <!-- Fallback: generated visual since local image paths won't work in browser -->
+
+    <div class="hero-particles" id="hero-particles"></div>
+
+    <div class="hero-content">
+      <div class="hero-text">
+        <div class="hero-eyebrow">AI-Powered Diagnostics · Spring 2026</div>
+        <h1 class="hero-title">
+          <em>Decoding</em>
+          <strong>Anemia</strong>
+          Through Fuzzy Intelligence
+        </h1>
+        <p class="hero-subtitle">
+          A clinical-grade Fuzzy Inference System that interprets your CBC report and delivers confidence-scored diagnosis across three anemia subtypes — handling medical uncertainty the way expert physicians do.
+        </p>
+        <div class="hero-actions">
+          <button class="btn-primary" onclick="showPage('tool')">
+            <span>Analyse CBC Report</span>
+          </button>
+          <button class="btn-outline" onclick="document.getElementById('about-anemia').scrollIntoView({behavior:'smooth'})">
+            Learn About Anemia
+          </button>
+        </div>
+      </div>
+
+      <div class="hero-3d">
+        <div class="rbc-3d-wrapper">
+          <div class="rbc-orbit">
+            <div class="rbc-satellite"></div>
+          </div>
+          <div class="rbc-orbit rbc-orbit-2">
+            <div class="rbc-satellite rbc-satellite-2"></div>
+          </div>
+          <div class="rbc-ring"></div>
+          <img src="images/clot_3D.png" alt="3D blood clot"
+               style="position:absolute;top:50%;left:50%;
+                      transform:translate(-50%,-50%);
+                      width:240px;height:240px;object-fit:contain;
+                      animation:rbc-float 4s ease-in-out infinite;
+                      filter:drop-shadow(0 0 40px rgba(170,74,68,0.6));
+                      z-index:10;" />
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-stats">
+      <div class="stat-card">
+        <div class="stat-number">1.6B</div>
+        <div class="stat-label">People Affected</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">3</div>
+        <div class="stat-label">Subtypes Classified</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">12</div>
+        <div class="stat-label">Expert Fuzzy Rules</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">4</div>
+        <div class="stat-label">CBC Parameters</div>
+      </div>
+    </div>
+
+    <div class="scroll-indicator">
+      <span class="scroll-text">Scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- Marquee -->
+  <div class="scroll-text-strip">
+    <div class="scroll-text-inner" id="marquee-inner">
+      <span>Hemoglobin</span><span class="sep">—</span>
+      <span>MCV Analysis</span><span class="sep">—</span>
+      <span>MCH Profiling</span><span class="sep">—</span>
+      <span>RDW Mapping</span><span class="sep">—</span>
+      <span>Mamdani FIS</span><span class="sep">—</span>
+      <span>Microcytic · Normocytic · Macrocytic</span><span class="sep">—</span>
+      <span>Fuzzy Logic</span><span class="sep">—</span>
+      <span>Medical AI</span><span class="sep">—</span>
+      <span>Expert Rules</span><span class="sep">—</span>
+      <span>Hemoglobin</span><span class="sep">—</span>
+      <span>MCV Analysis</span><span class="sep">—</span>
+      <span>MCH Profiling</span><span class="sep">—</span>
+      <span>RDW Mapping</span><span class="sep">—</span>
+      <span>Mamdani FIS</span><span class="sep">—</span>
+      <span>Microcytic · Normocytic · Macrocytic</span><span class="sep">—</span>
+      <span>Fuzzy Logic</span><span class="sep">—</span>
+      <span>Medical AI</span><span class="sep">—</span>
+      <span>Expert Rules</span><span class="sep">—</span>
+    </div>
+  </div>
+
+  <!-- About Anemia -->
+  <section id="about-anemia">
+    <div class="section">
+      <div class="anemia-intro">
+        <div class="anemia-text">
+          <div class="section-eyebrow reveal">What is Anemia</div>
+          <h2 class="section-title reveal reveal-delay-1">
+            When Your Blood <em>Loses</em> Its<br>
+            <u>Carrying Capacity</u>
+          </h2>
+          <p class="reveal reveal-delay-2">
+            Anemia is a clinical condition defined by a reduction in the concentration of <strong>hemoglobin (Hb)</strong> in red blood cells — the protein responsible for transporting oxygen from the lungs to every tissue in the body. When Hb falls below normal thresholds, cells become starved of oxygen, leading to systemic symptoms.
+          </p>
+          <p class="reveal reveal-delay-2">
+            The World Health Organization defines anemia as Hb &lt; 13 g/dL in adult men and &lt; 12 g/dL in adult women. However, the <strong>subtype of anemia</strong> is equally critical — determining it requires interpreting a Complete Blood Count (CBC) with nuanced clinical judgment, particularly since diagnostic boundaries are inherently vague and context-dependent.
+          </p>
+          <p class="reveal reveal-delay-3">
+            This is precisely where <strong>Fuzzy Logic</strong> excels: modelling the uncertainty and gradations that define real clinical decision-making.
+          </p>
+        </div>
+
+        <div class="anemia-visual reveal reveal-right">
+          <div class="hb-meter">
+            <div class="hb-meter-title">Hemoglobin Reference Ranges (g/dL)</div>
+            <div class="hb-bar-row">
+              <div class="hb-bar-label">Severe</div>
+              <div class="hb-bar-track"><div class="hb-bar-fill" style="width:25%;background:linear-gradient(to right,#4A0E0E,#7B1818);"></div></div>
+              <div class="hb-bar-val">&lt; 7.0</div>
+            </div>
+            <div class="hb-bar-row">
+              <div class="hb-bar-label">Moderate</div>
+              <div class="hb-bar-track"><div class="hb-bar-fill" style="width:42%;background:linear-gradient(to right,#7B1818,#AA4A44);"></div></div>
+              <div class="hb-bar-val">7–10</div>
+            </div>
+            <div class="hb-bar-row">
+              <div class="hb-bar-label">Mild</div>
+              <div class="hb-bar-track"><div class="hb-bar-fill" style="width:62%;background:linear-gradient(to right,#AA4A44,#F88379);"></div></div>
+              <div class="hb-bar-val">10–12</div>
+            </div>
+            <div class="hb-bar-row">
+              <div class="hb-bar-label">Normal ♀</div>
+              <div class="hb-bar-track"><div class="hb-bar-fill" style="width:78%;background:linear-gradient(to right,#F88379,#E97451);"></div></div>
+              <div class="hb-bar-val">12–16</div>
+            </div>
+            <div class="hb-bar-row">
+              <div class="hb-bar-label">Normal ♂</div>
+              <div class="hb-bar-track"><div class="hb-bar-fill" style="width:92%;background:linear-gradient(to right,#E97451,#C4A882);"></div></div>
+              <div class="hb-bar-val">13–17</div>
+            </div>
+            <div class="hb-legend">
+              <div class="hb-legend-item"><div class="hb-legend-dot" style="background:#4A0E0E;"></div>Critical</div>
+              <div class="hb-legend-item"><div class="hb-legend-dot" style="background:#AA4A44;"></div>Anemic</div>
+              <div class="hb-legend-item"><div class="hb-legend-dot" style="background:#E97451;"></div>Normal</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Types -->
+      <div class="types-grid" style="margin-top:5rem;">
+        <div class="type-card micro reveal">
+          <div class="type-card-bg"></div>
+          <span class="type-tag">Group A</span>
+          <span class="type-icon">🔴</span>
+          <h3>Microcytic Anemia</h3>
+          <h4>Small Red Blood Cells (MCV &lt; 80 fL)</h4>
+          <p>Characterised by abnormally small RBCs, typically with low haemoglobin content per cell. The most prevalent form globally, often linked to nutritional or genetic causes.</p>
+          <ul>
+            <li>Iron Deficiency Anemia</li>
+            <li>Thalassemia Trait</li>
+            <li>Lead Poisoning (rare)</li>
+          </ul>
+        </div>
+        <div class="type-card normo reveal reveal-delay-2">
+          <div class="type-card-bg"></div>
+          <span class="type-tag">Group B</span>
+          <span class="type-icon">🟠</span>
+          <h3>Normocytic Anemia</h3>
+          <h4>Normal-Sized RBCs (MCV 80–100 fL)</h4>
+          <p>RBCs are normal in size and haemoglobin content, but insufficient in number. Often a secondary manifestation of systemic disease or acute haematological events.</p>
+          <ul>
+            <li>Anemia of Chronic Disease</li>
+            <li>Acute Blood Loss</li>
+            <li>Aplastic Anemia</li>
+          </ul>
+        </div>
+        <div class="type-card macro reveal reveal-delay-3">
+          <div class="type-card-bg"></div>
+          <span class="type-tag">Group C</span>
+          <span class="type-icon">🟡</span>
+          <h3>Macrocytic Anemia</h3>
+          <h4>Large Red Blood Cells (MCV &gt; 100 fL)</h4>
+          <p>Characterised by abnormally enlarged RBCs that cannot effectively carry oxygen. Typically results from impaired DNA synthesis affecting cell maturation.</p>
+          <ul>
+            <li>Vitamin B12 Deficiency</li>
+            <li>Folate Deficiency</li>
+            <li>Pernicious Anemia</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CBC Parameters -->
+  <section class="cbc-section">
+    <div class="cbc-inner">
+      <div>
+        <div class="section-eyebrow reveal">Diagnostic Inputs</div>
+        <h2 class="section-title reveal reveal-delay-1">
+          CBC Parameters<br>
+          <em>Decoded</em>
+        </h2>
+        <p class="cbc-text reveal reveal-delay-2" style="margin-bottom:1.5rem;">
+          A Complete Blood Count is the cornerstone of anemia diagnosis. Our FIS system interprets four key CBC parameters — each providing distinct insight into the nature and severity of the condition.
+        </p>
+        <p class="cbc-text reveal reveal-delay-2">
+          The challenge lies in the inherently vague boundaries between "low" and "normal" — thresholds that shift with age, sex, altitude, and ethnicity. Fuzzy membership functions elegantly model these gradations.
+        </p>
+      </div>
+      <div class="param-grid">
+        <div class="param-card reveal">
+          <div class="param-abbr">Hb</div>
+          <div class="param-name">Hemoglobin</div>
+          <div class="param-range">Normal: 12–17 g/dL</div>
+          <div class="param-desc">Primary oxygen carrier. Low Hb is the defining criterion of anemia. Our FIS uses 4 linguistic terms: Very Low, Low, Normal, High.</div>
+        </div>
+        <div class="param-card reveal reveal-delay-1">
+          <div class="param-abbr">MCV</div>
+          <div class="param-name">Mean Corpuscular Volume</div>
+          <div class="param-range">Normal: 80–100 fL</div>
+          <div class="param-desc">Measures average RBC size. The key differentiator between anemia subtypes — maps to Microcytic, Normocytic, Macrocytic categories.</div>
+        </div>
+        <div class="param-card reveal reveal-delay-2">
+          <div class="param-abbr">MCH</div>
+          <div class="param-name">Mean Corpuscular Hemoglobin</div>
+          <div class="param-range">Normal: 27–33 pg</div>
+          <div class="param-desc">Average Hb mass per RBC. Low MCH (hypochromia) strongly indicates iron deficiency; High MCH suggests macrocytic pathology.</div>
+        </div>
+        <div class="param-card reveal reveal-delay-3">
+          <div class="param-abbr">RDW</div>
+          <div class="param-name">Red Cell Distribution Width</div>
+          <div class="param-range">Normal: 11.5–14.5%</div>
+          <div class="param-desc">Measures variability in RBC size (anisocytosis). Elevated RDW is a hallmark of iron deficiency and distinguishes it from thalassemia.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Symptoms -->
+  <section class="symptoms-section">
+    <div class="symptoms-inner">
+      <div class="symptoms-image reveal reveal-left">
+        <img src="images/symptoms.jpeg" alt="Anemia symptoms illustration" />
+        <div class="symptoms-badge">Clinical Presentation</div>
+      </div>
+      <div>
+        <div class="section-eyebrow reveal">Signs &amp; Symptoms</div>
+        <h2 class="section-title reveal reveal-delay-1">
+          Recognising<br><em>Anemia</em> in Practice
+        </h2>
+        <ul class="symptom-list reveal reveal-delay-2">
+          <li class="symptom-item">
+            <div class="symptom-icon-wrap">😴</div>
+            <div class="symptom-text">
+              <strong>Chronic Fatigue &amp; Weakness</strong>
+              <span>The hallmark symptom — reduced oxygen delivery to muscles causes persistent, disproportionate exhaustion even with minimal exertion.</span>
+            </div>
+          </li>
+          <li class="symptom-item">
+            <div class="symptom-icon-wrap">💨</div>
+            <div class="symptom-text">
+              <strong>Dyspnea (Shortness of Breath)</strong>
+              <span>Compensatory tachypnea as the body increases respiratory rate to extract more oxygen from limited haemoglobin.</span>
+            </div>
+          </li>
+          <li class="symptom-item">
+            <div class="symptom-icon-wrap">💫</div>
+            <div class="symptom-text">
+              <strong>Pallor &amp; Dizziness</strong>
+              <span>Reduced erythrocyte pigmentation causes pale conjunctivae and skin. Cerebral hypoperfusion leads to lightheadedness.</span>
+            </div>
+          </li>
+          <li class="symptom-item">
+            <div class="symptom-icon-wrap">💓</div>
+            <div class="symptom-text">
+              <strong>Palpitations &amp; Tachycardia</strong>
+              <span>Compensatory cardiac response — increased heart rate attempts to maintain adequate tissue oxygen delivery.</span>
+            </div>
+          </li>
+          <li class="symptom-item">
+            <div class="symptom-icon-wrap">🧠</div>
+            <div class="symptom-text">
+              <strong>Cognitive Impairment</strong>
+              <span>Particularly in B12 deficiency — neurological involvement causes memory issues, depression, and paresthesias in the extremities.</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Prevalence -->
+  <section class="prevalence-section">
+    <div class="prev-inner">
+      <div class="section-eyebrow reveal">Global Burden</div>
+      <h2 class="section-title reveal reveal-delay-1">The Scale of the <em>Problem</em></h2>
+      <div class="prev-stats-row">
+        <div class="prev-stat bg-1 reveal">
+          <div class="prev-stat-num">1.6B</div>
+          <div class="prev-stat-label">People Affected</div>
+          <div class="prev-stat-sub">Worldwide, WHO 2024</div>
+        </div>
+        <div class="prev-stat bg-2 reveal reveal-delay-1">
+          <div class="prev-stat-num">40%</div>
+          <div class="prev-stat-label">Children &lt;5 yrs</div>
+          <div class="prev-stat-sub">Most vulnerable group</div>
+        </div>
+        <div class="prev-stat bg-3 reveal reveal-delay-2">
+          <div class="prev-stat-num">37%</div>
+          <div class="prev-stat-label">Pregnant Women</div>
+          <div class="prev-stat-sub">High-risk population</div>
+        </div>
+        <div class="prev-stat bg-4 reveal reveal-delay-3">
+          <div class="prev-stat-num">50%</div>
+          <div class="prev-stat-label">Iron Deficiency</div>
+          <div class="prev-stat-sub">Most common subtype</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer placeholder on home page -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-top">
+        <div>
+          <div class="footer-brand">HemaLogic</div>
+          <div class="footer-tagline">A Fuzzy Intelligence System for anemia subtype classification — bridging AI with haematological diagnostics.</div>
+        </div>
+        <div class="footer-links">
+          <button onclick="showPage('home')">Home</button>
+          <button onclick="showPage('tool')">Diagnose</button>
+          <button onclick="showPage('method')">Methodology</button>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div class="footer-copy">© 2026 <strong>HemaLogic</strong> — AIC 201 Artificial Intelligence</div>
+        <div class="footer-course">Bahria University, Karachi Campus · Dr. Humera Farooq · BS AI-4</div>
+      </div>
+    </div>
+  </footer>
+
+</div><!-- end page-home -->
+
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE 2 — DIAGNOSTIC TOOL
+═══════════════════════════════════════════════════════ -->
+<div class="page" id="page-tool">
+
+  <div class="tool-header">
+    <div class="tool-header-inner">
+      <div class="section-eyebrow" style="justify-content:center;margin-bottom:1rem;">
+        <span>Mamdani FIS Engine</span>
+      </div>
+      <h1 class="section-title" style="text-align:center;color:var(--white);">
+        CBC Anemia <em>Classifier</em>
+      </h1>
+      <p class="tool-desc">
+        Enter your Complete Blood Count values below. Our 12-rule Mamdani Fuzzy Inference System will compute confidence scores for all three anemia subtypes — providing clinically-reasoned output.
+      </p>
+    </div>
+  </div>
+
+  <div class="tool-body">
+    <div class="tool-body-inner">
+
+      <!-- Input Panel -->
+      <div>
+        <div class="input-panel">
+          <div class="input-panel-title">CBC Parameters</div>
+          <div class="input-panel-sub">Enter values from your blood report</div>
+
+          <div class="form-group">
+            <div class="form-label">
+              <span class="form-label-text">Hb — Hemoglobin</span>
+              <span class="form-label-range">Normal: 12–17 g/dL</span>
+            </div>
+            <input type="number" class="form-input" id="inp-hb" placeholder="e.g. 9.5" min="5" max="18" step="0.1" oninput="updateSlider('hb')" />
+            <input type="range" class="form-slider" id="sl-hb" min="5" max="18" step="0.1" value="12"
+              style="background:linear-gradient(to right,var(--crimson) 0%,var(--crimson) 50%,rgba(170,74,68,0.15) 50%,rgba(170,74,68,0.15) 100%)"
+              oninput="syncInput('hb')" />
+            <div class="slider-labels"><span>5</span><span>11.5</span><span>18</span></div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-label">
+              <span class="form-label-text">MCV — Mean Corpuscular Volume</span>
+              <span class="form-label-range">Normal: 80–100 fL</span>
+            </div>
+            <input type="number" class="form-input" id="inp-mcv" placeholder="e.g. 72" min="55" max="125" step="0.5" oninput="updateSlider('mcv')" />
+            <input type="range" class="form-slider" id="sl-mcv" min="55" max="125" step="0.5" value="87"
+              style="background:linear-gradient(to right,var(--crimson) 0%,var(--crimson) 46%,rgba(170,74,68,0.15) 46%,rgba(170,74,68,0.15) 100%)"
+              oninput="syncInput('mcv')" />
+            <div class="slider-labels"><span>55</span><span>87</span><span>125</span></div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-label">
+              <span class="form-label-text">MCH — Mean Corpuscular Hemoglobin</span>
+              <span class="form-label-range">Normal: 27–33 pg</span>
+            </div>
+            <input type="number" class="form-input" id="inp-mch" placeholder="e.g. 24" min="14" max="42" step="0.2" oninput="updateSlider('mch')" />
+            <input type="range" class="form-slider" id="sl-mch" min="14" max="42" step="0.2" value="30"
+              style="background:linear-gradient(to right,var(--crimson) 0%,var(--crimson) 57%,rgba(170,74,68,0.15) 57%,rgba(170,74,68,0.15) 100%)"
+              oninput="syncInput('mch')" />
+            <div class="slider-labels"><span>14</span><span>28</span><span>42</span></div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-label">
+              <span class="form-label-text">RDW — Red Cell Distribution Width</span>
+              <span class="form-label-range">Normal: 11.5–14.5%</span>
+            </div>
+            <input type="number" class="form-input" id="inp-rdw" placeholder="e.g. 16" min="10" max="22" step="0.1" oninput="updateSlider('rdw')" />
+            <input type="range" class="form-slider" id="sl-rdw" min="10" max="22" step="0.1" value="13"
+              style="background:linear-gradient(to right,var(--crimson) 0%,var(--crimson) 25%,rgba(170,74,68,0.15) 25%,rgba(170,74,68,0.15) 100%)"
+              oninput="syncInput('rdw')" />
+            <div class="slider-labels"><span>10</span><span>16</span><span>22</span></div>
+          </div>
+
+          <button class="btn-diagnose" onclick="runDiagnosis()"><span>Run FIS Analysis →</span></button>
+          <button class="btn-reset" onclick="resetForm()">Clear All Values</button>
+        </div>
+
+        <div style="margin-top:1.5rem;">
+          <div class="info-panel">
+            <div class="info-panel-title">Quick Reference Presets</div>
+            <div class="info-rows">
+              <div class="info-row" style="cursor:pointer;" onclick="loadPreset('iron')">
+                <span class="info-row-key">🔴 Iron Deficiency</span>
+                <span class="info-row-val" style="color:var(--coral);font-size:0.75rem;">Load →</span>
+              </div>
+              <div class="info-row" style="cursor:pointer;" onclick="loadPreset('thal')">
+                <span class="info-row-key">🟤 Thalassemia Trait</span>
+                <span class="info-row-val" style="color:var(--coral);font-size:0.75rem;">Load →</span>
+              </div>
+              <div class="info-row" style="cursor:pointer;" onclick="loadPreset('chronic')">
+                <span class="info-row-key">🟠 Chronic Disease</span>
+                <span class="info-row-val" style="color:var(--coral);font-size:0.75rem;">Load →</span>
+              </div>
+              <div class="info-row" style="cursor:pointer;" onclick="loadPreset('b12')">
+                <span class="info-row-key">🟡 B12 Deficiency</span>
+                <span class="info-row-val" style="color:var(--coral);font-size:0.75rem;">Load →</span>
+              </div>
+              <div class="info-row" style="cursor:pointer;" onclick="loadPreset('normal')">
+                <span class="info-row-key">✅ Normal CBC</span>
+                <span class="info-row-val" style="color:var(--coral);font-size:0.75rem;">Load →</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result Panel -->
+      <div class="result-panel">
+        <div class="result-idle" id="result-idle">
+          <div class="result-idle-icon">🩸</div>
+          <div class="result-idle-text">Awaiting CBC values</div>
+          <div class="result-idle-sub">Enter Hb, MCV, MCH, RDW above and click Run Analysis</div>
+        </div>
+
+        <div class="result-card" id="result-card">
+          <div class="result-verdict">
+            <div class="verdict-icon" id="verdict-icon">🔴</div>
+            <div class="verdict-text">
+              <small id="verdict-label">PRIMARY DIAGNOSIS</small>
+              <h3 id="verdict-name">—</h3>
+              <p id="verdict-sub">—</p>
+            </div>
+          </div>
+
+          <div class="score-bars">
+            <div class="score-bar-item">
+              <div class="score-bar-header">
+                <span class="score-bar-name">Group A — Microcytic</span>
+                <span class="score-bar-val" id="score-a-val" style="color:var(--maroon);">0%</span>
+              </div>
+              <div class="score-bar-track">
+                <div class="score-bar-fill a" id="score-a-bar" style="width:0%;"></div>
+              </div>
+            </div>
+            <div class="score-bar-item">
+              <div class="score-bar-header">
+                <span class="score-bar-name">Group B — Normocytic</span>
+                <span class="score-bar-val" id="score-b-val" style="color:var(--crimson);">0%</span>
+              </div>
+              <div class="score-bar-track">
+                <div class="score-bar-fill b" id="score-b-bar" style="width:0%;"></div>
+              </div>
+            </div>
+            <div class="score-bar-item">
+              <div class="score-bar-header">
+                <span class="score-bar-name">Group C — Macrocytic</span>
+                <span class="score-bar-val" id="score-c-val" style="color:var(--burnt);">0%</span>
+              </div>
+              <div class="score-bar-track">
+                <div class="score-bar-fill c" id="score-c-bar" style="width:0%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="result-notes">
+            <p id="result-clinical-note">—</p>
+          </div>
+        </div>
+
+        <!-- Input summary -->
+        <div id="input-summary" style="display:none;">
+          <div class="info-panel">
+            <div class="info-panel-title">Submitted CBC Values</div>
+            <div class="info-rows">
+              <div class="info-row"><span class="info-row-key">Hb</span><span class="info-row-val" id="sum-hb">—</span></div>
+              <div class="info-row"><span class="info-row-key">MCV</span><span class="info-row-val" id="sum-mcv">—</span></div>
+              <div class="info-row"><span class="info-row-key">MCH</span><span class="info-row-val" id="sum-mch">—</span></div>
+              <div class="info-row"><span class="info-row-key">RDW</span><span class="info-row-val" id="sum-rdw">—</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="disclaimer">
+      <div class="disclaimer-icon">⚠️</div>
+      <p><strong>Medical Disclaimer:</strong> This tool is designed for educational and research purposes as part of AIC 201 — Artificial Intelligence coursework at Bahria University. It implements a Fuzzy Inference System based on published haematological guidelines. <strong>This system does not constitute medical advice and must not replace clinical evaluation by a qualified physician.</strong> Always consult a healthcare professional for diagnosis and treatment decisions.</p>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-top">
+        <div>
+          <div class="footer-brand">HemaLogic</div>
+          <div class="footer-tagline">Mamdani FIS · 4 CBC Inputs · 12 Expert Rules · 3 Anemia Subtypes</div>
+        </div>
+        <div class="footer-links">
+          <button onclick="showPage('home')">Home</button>
+          <button onclick="showPage('tool')">Diagnose</button>
+          <button onclick="showPage('method')">Methodology</button>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div class="footer-copy">© 2026 <strong>HemaLogic</strong> — AIC 201 Artificial Intelligence</div>
+        <div class="footer-course">Bahria University, Karachi Campus · Dr. Humera Farooq</div>
+      </div>
+    </div>
+  </footer>
+
+</div><!-- end page-tool -->
+
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE 3 — METHODOLOGY
+═══════════════════════════════════════════════════════ -->
+<div class="page" id="page-method">
+
+  <div style="padding-top:6rem;background:var(--bg);"></div>
+
+  <div class="method-hero">
+    <div class="method-hero-split">
+      <div>
+        <div class="section-eyebrow reveal">How It Works</div>
+        <h1 class="section-title reveal reveal-delay-1">
+          From <em>Dataset</em> to<br>
+          <u>Defuzzification</u>
+        </h1>
+        <p style="font-size:1rem;line-height:1.75;color:#6B4040;margin-bottom:1.5rem;" class="reveal reveal-delay-2">
+          Our system implements a complete Mamdani Fuzzy Inference System pipeline — from raw CBC data through fuzzification, rule evaluation, aggregation, and defuzzification — to produce a clinically meaningful diagnosis confidence score.
+        </p>
+        <p style="font-size:0.9rem;line-height:1.7;color:#8B6B6B;" class="reveal reveal-delay-3">
+          The approach was chosen specifically for its interpretability: each fuzzy rule maps directly to real clinical reasoning, making the system explainable to physicians, unlike black-box neural networks.
+        </p>
+      </div>
+
+      <div class="pipeline-visual reveal reveal-right">
+        <div class="pipeline-steps">
+          <div class="pipeline-step">
+            <div class="step-num">01</div>
+            <div class="step-content">
+              <h4>Dataset Acquisition & Preprocessing</h4>
+              <p>Loaded the provided CBC dataset (Excel), cleaned missing values, mapped diagnoses to 3 groups (A/B/C), and applied Gaussian-noise SMOTE augmentation to reach 60+ patients per class for balanced training.</p>
+            </div>
+          </div>
+          <div class="pipeline-step">
+            <div class="step-num">02</div>
+            <div class="step-content">
+              <h4>Fuzzy Membership Function Design</h4>
+              <p>Defined trapezoidal and triangular membership functions for all 4 inputs (Hb, MCV, MCH, RDW) with clinically-validated linguistic terms. Gaussian MFs applied to outputs for smooth, continuous scoring.</p>
+            </div>
+          </div>
+          <div class="pipeline-step">
+            <div class="step-num">03</div>
+            <div class="step-content">
+              <h4>Fuzzification</h4>
+              <p>Each crisp CBC input value is transformed into degrees of membership across all linguistic terms simultaneously — e.g., an Hb of 9 g/dL has partial membership in both "Low" and "Normal" categories.</p>
+            </div>
+          </div>
+          <div class="pipeline-step">
+            <div class="step-num">04</div>
+            <div class="step-content">
+              <h4>Rule Evaluation (12 Rules)</h4>
+              <p>12 expert-derived IF-THEN rules are fired in parallel. Each rule computes its activation strength using the AND operator (minimum T-norm), producing a clipped output membership function.</p>
+            </div>
+          </div>
+          <div class="pipeline-step">
+            <div class="step-num">05</div>
+            <div class="step-content">
+              <h4>Aggregation & Defuzzification</h4>
+              <p>All rule outputs are combined via maximum aggregation. The centroid defuzzification method converts the resulting fuzzy set into a crisp diagnosis confidence score in the [0,1] range for each subtype.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rules section -->
+  <section class="rules-section">
+    <div class="rules-inner">
+      <div class="section-eyebrow reveal">Expert Knowledge Base</div>
+      <h2 class="section-title reveal reveal-delay-1">The 12 <em>Fuzzy Rules</em></h2>
+      <p style="font-size:0.95rem;line-height:1.7;color:#6B4040;max-width:700px;margin-top:1rem;" class="reveal reveal-delay-2">
+        Each rule encodes a distinct clinical pattern derived from haematological literature and physician expertise. Rules are weighted differently — "classic" presentations fire with high confidence; borderline patterns produce medium scores.
+      </p>
+
+      <div class="rules-grid">
+        <!-- R1 -->
+        <div class="rule-card reveal">
+          <div class="rule-id"><span>R01</span><span class="rule-badge">Group A — Classic Iron Deficiency</span></div>
+          <div class="rule-if">
+            <span class="kw">IF</span> Hb = <span class="val">Very Low</span>
+            <span class="kw"> AND</span> MCV = <span class="val">Microcytic</span>
+            <span class="kw"> AND</span> MCH = <span class="val">Low</span>
+            <span class="kw"> AND</span> RDW = <span class="val">High</span>
+          </div>
+          <div class="rule-then">
+            <span class="kw">THEN</span> Score A = <span class="out">HIGH</span>, Score B = <span class="out">LOW</span>, Score C = <span class="out">LOW</span>
+          </div>
+        </div>
+        <!-- R2 -->
+        <div class="rule-card reveal reveal-delay-1">
+          <div class="rule-id"><span>R02</span><span class="rule-badge">Group A — Moderate Iron Deficiency</span></div>
+          <div class="rule-if">
+            <span class="kw">IF</span> Hb = <span class="val">Low</span>
+            <span class="kw"> AND</span> MCV = <span class="val">Microcytic</span>
+            <span class="kw"> AND</span> MCH = <span class="val">Low</span>
+            <span class="kw"> AND</span> RDW = <span class="val">Elevated</span>
+          </div>
+          <div class="rule-then">
+            <span class="kw">THEN</span> Score A = <span class="out">HIGH</span>, Score B = <span class="out">LOW</span>, Score C = <span class="out">LOW</span>
+          </div>
+        </div>
+        <!-- R3 -->
+        <div class="rule-card reveal reveal-delay-2">
+          <div class="rule-id"><span>R03</span><span class="rule-badge">Group A — Thalassemia Trait</span></div>
+          <div class="rule-if">
+            <span class="kw">IF</span> Hb = <span class="val">Low</span>
+            <span class="kw"> AND</span> MCV = <span class="val">Microcytic</span>
+            <span class="kw"> AND</span> MCH = <span class="val">Low</span>
+            <span class="kw"> AND</span> RDW = <span class="val">Normal</span>
+          </div>
+          <div class="rule-then">
+            <span class="kw">THEN</span> Score A = <span class="out">MEDIUM</span>, Score B = <span class="out">LOW</span>, Score C = <span class="out">LOW</span>
+          </div>
+        </div>
+        <!-- R4 -->
+        <div class="rule-card reveal reveal-delay-3">
+          <div class="rule-id"><span>R04</span><span class="rule-badge">Group A — Thalassemia High Hb</span></div>
+          <div class="rule-if">
+            <span class="kw">IF</span> Hb = <span class="val">Normal</span>
+            <span class="kw"> AND</span> MCV = <span class="val">Microcytic</span>
+            <span class="kw"> AND</span> RDW = <span class="val">Normal</span>
+          </div>
+          <div class="rule-then">
+            <span class="kw">THEN</span> Score A = <span class="out">MEDIUM</span>, Score B = <span class="out">LOW</span>, Score C = <span class="out">LOW</span>
+          </div>
+        </div>
+        <!-- R5 -->
+        <div class="rule-card reveal">
+          <div class="rule-id"><span>R05</span><span class="rule-badge">Group B — Chronic Disease Classic</span></div>
+          <div class="rule-if">
+            <span class="kw">IF</span> Hb = <span class="val">Low</span>
+            <span class="kw"> AND</span> MCV = <span class="val">Normocytic</span>
+            <span class="kw"> AND</span> MCH = <span class="val">Normal</span>
+            <span class="kw"> AND</span> RDW = <span class="val">Normal</span>
+          </div>
+          <div class="rule-then">
+            <span class="kw">THEN</span> Score A = <span class="out">LOW</span>, Score B = <span class="out">HIGH</span>, Score C = <span class="out">LOW</span>
+          </div>
+        </div>
+        <!-- R6 -->
+        <div class="rule-card reveal reveal-delay-1">
+          <div class="rule-id"><span>R06</span><span class="rule-badge">Group B — Acute Blood Loss</span></div>
+          <div class="rule-if">
+            <span class="kw">IF</span> Hb = <span class="val">Very Low</span>
+            <span class="kw"> AND</span> MCV = <span class="val">Normocytic</span>
+            <span class="kw"> AND</span> RDW = <span class="val">Elevated</span>
+          </div>
+          <div class="rule-then">
+            <span class="kw">THEN</span> Score A = <span class="out">LOW</span>, Score B = <span class="out">HIGH</span>, Score C = <span class="out">LOW</span>
+          </div>
+        </div>
+        <!-- R7 -->
+        <div class="rule-card reveal reveal-delay-2">
+          <div class="rule-id"><span>R07</span><span class="rule-badge">Group B — Borderline Normocytic</span></div>
+          <div class="rule-if">
+            <span class="kw">IF</span> Hb = <span class="val">Low</span>
+            <span class="kw"> AND</span> MCV = <span class="val">Normocytic</span>
+            <span class="kw"> AND</span> MCH = <span class="val">Normal</span>
+          </div>
+          <div class="rule-then">
+            <span class="kw">THEN</span> Score A = <span class="out">LOW</span>, Score B = <span class="out">MEDIUM</span>, Score C = <span class="out">LOW</span>
+          </div>
+        </div>
+        <!-- R8 -->
+        <div class="rule-card reveal reveal-delay-3">
+          <div class="rule-id"><span>R08</span><span class="rule-badge">Group B — Mild Chronic Disease</span></div>
+          <div class="rule-if">
+            <span class="kw">IF</span> Hb = <span class="val">Normal</span>
+            <span class="kw"> AND</span> MCV = <span class="val">Normocytic</span>
+            <span class="kw"> AND</span> RDW = <span class="val">Normal</span>
+          </div>
+          <div class="rule-then">
+            <span class="kw">THEN</span> Score A = <span class="out">LOW</span>, Score B = <span class="out">MEDIUM</span>, Score C = <span class="out">LOW</span>
+          </div>
+        </div>
+        <!-- R9 -->
+        <div class="rule-card reveal">
+          <div class="rule-id"><span>R09</span><span class="rule-badge">Group C — B12/Folate Classic</span></div>
+          <div class="rule-if">
+            <span class="kw">IF</span> MCV = <span class="val">Macrocytic</span>
+            <span class="kw"> AND</span> MCH = <span class="val">High</span>
+            <span class="kw"> AND</span> RDW = <span class="val">Normal</span>
+          </div>
+          <div class="rule-then">
+            <span class="kw">THEN</span> Score A = <span class="out">LOW</span>, Score B = <span class="out">LOW</span>, Score C = <span class="out">HIGH</span>
+          </div>
+        </div>
+        <!-- R10 -->
+        <div class="rule-card reveal reveal-delay-1">
+          <div class="rule-id"><span>R10</span><span class="rule-badge">Group C — B12 with Low Hb</span></div>
+          <div class="rule-if">
+            <span class="kw">IF</span> Hb = <span class="val">Very Low</span>
+            <span class="kw"> AND</span> MCV = <span class="val">Macrocytic</span>
+            <span class="kw"> AND</span> MCH = <span class="val">High</span>
+          </div>
+          <div class="rule-then">
+            <span class="kw">THEN</span> Score A = <span class="out">LOW</span>, Score B = <span class="out">LOW</span>, Score C = <span class="out">HIGH</span>
+          </div>
+        </div>
+        <!-- R11 -->
+        <div class="rule-card reveal reveal-delay-2">
+          <div class="rule-id"><span>R11</span><span class="rule-badge">Group C — B12 Moderate</span></div>
+          <div class="rule-if">
+            <span class="kw">IF</span> Hb = <span class="val">Low</span>
+            <span class="kw"> AND</span> MCV = <span class="val">Macrocytic</span>
+            <span class="kw"> AND</span> MCH = <span class="val">Normal</span>
+          </div>
+          <div class="rule-then">
+            <span class="kw">THEN</span> Score A = <span class="out">LOW</span>, Score B = <span class="out">LOW</span>, Score C = <span class="out">MEDIUM</span>
+          </div>
+        </div>
+        <!-- R12 -->
+        <div class="rule-card reveal reveal-delay-3">
+          <div class="rule-id"><span>R12</span><span class="rule-badge">Group C — B12 Elevated RDW</span></div>
+          <div class="rule-if">
+            <span class="kw">IF</span> MCV = <span class="val">Macrocytic</span>
+            <span class="kw"> AND</span> RDW = <span class="val">Elevated</span>
+          </div>
+          <div class="rule-then">
+            <span class="kw">THEN</span> Score A = <span class="out">LOW</span>, Score B = <span class="out">LOW</span>, Score C = <span class="out">MEDIUM</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Impact section -->
+  <section class="impact-section">
+    <div class="impact-inner">
+      <div class="section-eyebrow reveal">Real-World Impact</div>
+      <h2 class="section-title reveal reveal-delay-1">Why This <em>Matters</em><br>for the Medical Sector</h2>
+      <div class="impact-grid">
+        <div class="impact-card reveal">
+          <span class="impact-icon">🏥</span>
+          <h3>Decision Support in Resource-Limited Settings</h3>
+          <p>In low-income regions where specialist haematologists are scarce, an AI-assisted FIS provides frontline clinicians with structured diagnostic reasoning — reducing misdiagnosis rates in communities with high anemia burden.</p>
+        </div>
+        <div class="impact-card reveal reveal-delay-1">
+          <span class="impact-icon">🔬</span>
+          <h3>Explainable AI in Clinical Diagnosis</h3>
+          <p>Unlike neural networks, fuzzy rules are directly interpretable by physicians. Each diagnosis output traces back to specific IF-THEN rules — enabling clinicians to validate, audit, and trust the system's reasoning.</p>
+        </div>
+        <div class="impact-card reveal reveal-delay-2">
+          <span class="impact-icon">⚡</span>
+          <h3>Rapid Triage at Point of Care</h3>
+          <p>Instant CBC interpretation eliminates delays between blood draw and subtype classification. Faster differentiation between iron deficiency and thalassemia directly impacts treatment protocols and prevents inappropriate iron supplementation.</p>
+        </div>
+        <div class="impact-card reveal">
+          <span class="impact-icon">👶</span>
+          <h3>Paediatric &amp; Maternal Health</h3>
+          <p>Children and pregnant women — the most vulnerable populations — benefit most from rapid anemia subtyping. Early correct diagnosis prevents developmental delays in children and maternal complications during pregnancy.</p>
+        </div>
+        <div class="impact-card reveal reveal-delay-1">
+          <span class="impact-icon">📊</span>
+          <h3>Population-Level Screening</h3>
+          <p>The system can process large-scale CBC datasets to identify anemia patterns across communities — enabling public health interventions, nutritional supplementation programmes, and targeted screening campaigns.</p>
+        </div>
+        <div class="impact-card reveal reveal-delay-2">
+          <span class="impact-icon">🤖</span>
+          <h3>ML Validation &amp; Comparison</h3>
+          <p>Pairing the FIS with Random Forest and XGBoost classifiers (as implemented) creates a hybrid AI system — the FIS provides explainability while ML models provide statistical validation and confidence benchmarking.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tech Stack -->
+  <section class="tech-section">
+    <div class="tech-inner">
+      <div class="section-eyebrow reveal">Technology Stack</div>
+      <h2 class="section-title reveal reveal-delay-1"><em>Built With</em></h2>
+      <div class="tech-grid reveal reveal-delay-2">
+        <div class="tech-chip">
+          <div class="tech-chip-name">Python 3.10+</div>
+          <div class="tech-chip-role">Core Language</div>
+        </div>
+        <div class="tech-chip">
+          <div class="tech-chip-name">scikit-fuzzy</div>
+          <div class="tech-chip-role">Mamdani FIS Engine</div>
+        </div>
+        <div class="tech-chip">
+          <div class="tech-chip-name">NumPy</div>
+          <div class="tech-chip-role">Numerical Computation</div>
+        </div>
+        <div class="tech-chip">
+          <div class="tech-chip-name">Pandas</div>
+          <div class="tech-chip-role">Data Manipulation</div>
+        </div>
+        <div class="tech-chip">
+          <div class="tech-chip-name">Matplotlib</div>
+          <div class="tech-chip-role">MF Visualisation</div>
+        </div>
+        <div class="tech-chip">
+          <div class="tech-chip-name">scikit-learn</div>
+          <div class="tech-chip-role">Random Forest + CV</div>
+        </div>
+        <div class="tech-chip">
+          <div class="tech-chip-name">XGBoost</div>
+          <div class="tech-chip-role">Gradient Boosting</div>
+        </div>
+        <div class="tech-chip">
+          <div class="tech-chip-name">SHAP</div>
+          <div class="tech-chip-role">Model Explainability</div>
+        </div>
+        <div class="tech-chip">
+          <div class="tech-chip-name">SMOTE</div>
+          <div class="tech-chip-role">Data Augmentation</div>
+        </div>
+        <div class="tech-chip">
+          <div class="tech-chip-name">Bootstrap CI</div>
+          <div class="tech-chip-role">Uncertainty Quantification</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-top">
+        <div>
+          <div class="footer-brand">HemaLogic</div>
+          <div class="footer-tagline">AIC 201 — Artificial Intelligence · Bahria University, Karachi Campus · Spring 2026</div>
+        </div>
+        <div class="footer-links">
+          <button onclick="showPage('home')">Home</button>
+          <button onclick="showPage('tool')">Diagnose</button>
+          <button onclick="showPage('method')">Methodology</button>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div class="footer-copy">© 2026 <strong>HemaLogic</strong> — Course Instructor: Dr. Humera Farooq</div>
+        <div class="footer-course">Submission Deadline: 17/05/2026 · Marks: 10</div>
+      </div>
+    </div>
+  </footer>
+
+</div><!-- end page-method -->
+
+
+<!-- ═══════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════ -->
+<script>
+/* ─── Custom Cursor — REMOVED ─── */
+
+/* ─── Particles ─── */
+const pContainer = document.getElementById('hero-particles');
+for(let i = 0; i < 20; i++) {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  const size = Math.random() * 60 + 10;
+  p.style.cssText = `
+    width:${size}px; height:${size}px;
+    left:${Math.random()*100}%;
+    animation-duration:${Math.random()*15+10}s;
+    animation-delay:${Math.random()*10}s;
+    background: radial-gradient(circle, rgba(248,131,121,0.3), rgba(170,74,68,0.05));
+  `;
+  pContainer.appendChild(p);
+}
+
+/* ─── Navigation ─── */
+const nav = document.getElementById('main-nav');
+let currentPage = 'home';
+
+window.addEventListener('scroll', () => {
+  if(window.scrollY > 60) nav.classList.add('scrolled');
+  else nav.classList.remove('scrolled');
+});
+
+// Nav pill indicator
+const tabs = document.querySelectorAll('.nav-tab');
+const indicator = document.getElementById('nav-indicator');
+const pill = document.getElementById('nav-pill');
+
+function updateIndicator(tab) {
+  const pillRect = pill.getBoundingClientRect();
+  const tabRect  = tab.getBoundingClientRect();
+  indicator.style.left    = (tabRect.left - pillRect.left) + 'px';
+  indicator.style.width   = tabRect.width + 'px';
+  indicator.style.opacity = '1';
+}
+
+tabs.forEach(tab => {
+  tab.addEventListener('mouseenter', () => updateIndicator(tab));
+  tab.addEventListener('click', () => updateIndicator(tab));
+});
+pill.addEventListener('mouseleave', () => {
+  // keep indicator on active page
+  const active = document.querySelector(`.nav-tab[data-page="${currentPage}"]`);
+  if(active) updateIndicator(active);
+  else indicator.style.opacity = '0';
+});
+
+/* ─── Page Switching ─── */
+function showPage(page) {
+  const current = document.querySelector('.page.active');
+  if(current) {
+    current.classList.add('exit');
+    setTimeout(() => {
+      current.classList.remove('active','exit');
+      current.style.display = 'none';
+    }, 400);
+  }
+  setTimeout(() => {
+    const target = document.getElementById(`page-${page}`);
+    target.style.display = 'block';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        target.classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        currentPage = page;
+        // update nav indicator
+        const activeTab = document.querySelector(`.nav-tab[data-page="${page}"]`);
+        if(activeTab) setTimeout(() => updateIndicator(activeTab), 100);
+        // trigger reveal
+        setTimeout(initReveal, 100);
+      });
+    });
+  }, 100);
+}
+
+/* ─── Mobile Nav ─── */
+function toggleMobileNav() {
+  document.getElementById('nav-mobile').classList.toggle('open');
+  document.getElementById('nav-overlay').classList.toggle('open');
+}
+
+/* ─── Scroll Reveal ─── */
+function initReveal() {
+  const els = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if(e.isIntersecting) { e.target.classList.add('in-view'); obs.unobserve(e.target); }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  els.forEach(el => obs.observe(el));
+}
+initReveal();
+
+/* ─── Slider Sync ─── */
+function updateSlider(key) {
+  const inp = document.getElementById(`inp-${key}`);
+  const sl  = document.getElementById(`sl-${key}`);
+  if(inp.value) {
+    sl.value = inp.value;
+    updateSliderBg(sl);
+  }
+}
+function syncInput(key) {
+  const inp = document.getElementById(`inp-${key}`);
+  const sl  = document.getElementById(`sl-${key}`);
+  inp.value = parseFloat(sl.value).toFixed(1);
+  updateSliderBg(sl);
+}
+function updateSliderBg(sl) {
+  const min = parseFloat(sl.min), max = parseFloat(sl.max), val = parseFloat(sl.value);
+  const pct = ((val - min) / (max - min)) * 100;
+  sl.style.background = `linear-gradient(to right, var(--crimson) 0%, var(--crimson) ${pct}%, rgba(170,74,68,0.15) ${pct}%, rgba(170,74,68,0.15) 100%)`;
+}
+// init all sliders
+['hb','mcv','mch','rdw'].forEach(k => { const sl = document.getElementById(`sl-${k}`); if(sl) updateSliderBg(sl); });
+
+/* ─── Presets ─── */
+const PRESETS = {
+  iron:    { hb: 8.2,  mcv: 68,  mch: 21,  rdw: 18.5 },
+  thal:    { hb: 10.5, mcv: 66,  mch: 20,  rdw: 13.2 },
+  chronic: { hb: 10.0, mcv: 86,  mch: 29,  rdw: 13.0 },
+  b12:     { hb: 8.5,  mcv: 108, mch: 37,  rdw: 14.2 },
+  normal:  { hb: 14.0, mcv: 88,  mch: 30,  rdw: 12.8 },
+};
+function loadPreset(key) {
+  const p = PRESETS[key];
+  ['hb','mcv','mch','rdw'].forEach(k => {
+    document.getElementById(`inp-${k}`).value = p[k];
+    document.getElementById(`sl-${k}`).value  = p[k];
+    updateSliderBg(document.getElementById(`sl-${k}`));
+  });
+}
+
+/* ─── Reset ─── */
+function resetForm() {
+  ['hb','mcv','mch','rdw'].forEach(k => {
+    document.getElementById(`inp-${k}`).value = '';
+  });
+  document.getElementById('result-idle').style.display = 'flex';
+  document.getElementById('result-card').classList.remove('visible');
+  document.getElementById('input-summary').style.display = 'none';
+}
+
+/* ─── FIS Engine (JavaScript implementation) ─── */
+
+// Trapezoidal MF
+function trapmf(x, a, b, c, d) {
+  if(x <= a || x >= d) return 0;
+  if(x >= b && x <= c) return 1;
+  if(x < b) return (x - a) / (b - a);
+  return (d - x) / (d - c);
+}
+// Triangular MF
+function trimf(x, a, b, c) {
+  if(x <= a || x >= c) return 0;
+  if(x === b) return 1;
+  if(x < b) return (x - a) / (b - a);
+  return (c - x) / (c - b);
+}
+// Gaussian MF
+function gaussmf(x, mean, sigma) {
+  return Math.exp(-0.5 * Math.pow((x - mean) / sigma, 2));
+}
+
+function fuzzify(hb, mcv, mch, rdw) {
+  return {
+    hb: {
+      very_low: trapmf(hb, 5, 5, 7.0, 8.5),
+      low:      trimf (hb, 7, 9.0, 11.0),
+      normal:   trimf (hb, 10, 12.5, 15),
+      high:     trapmf(hb, 14, 16, 18, 18),
+    },
+    mcv: {
+      microcytic: trapmf(mcv, 55, 55, 72, 80),
+      normocytic: trimf (mcv, 75, 87, 100),
+      macrocytic: trapmf(mcv, 97, 105, 125, 125),
+    },
+    mch: {
+      low:    trapmf(mch, 14, 14, 22, 27),
+      normal: trimf (mch, 25, 30, 34),
+      high:   trapmf(mch, 32, 36, 42, 42),
+    },
+    rdw: {
+      normal:   trapmf(rdw, 10, 10, 13.0, 14.5),
+      elevated: trimf (rdw, 13.5, 16.0, 18.5),
+      high:     trapmf(rdw, 17.0, 19.0, 22, 22),
+    },
+  };
+}
+
+// Output MFs (Gaussian) at crisp output points
+const OUT_RANGE = Array.from({length:101}, (_,i) => i/100);
+function outMF(level, x) {
+  const params = { low: [0.1, 0.12], medium: [0.5, 0.12], high: [0.85, 0.10] };
+  const [m, s] = params[level];
+  return gaussmf(x, m, s);
+}
+
+// Centroid defuzz
+function centroid(aggregated) {
+  let num = 0, den = 0;
+  OUT_RANGE.forEach((x, i) => {
+    num += x * aggregated[i];
+    den += aggregated[i];
+  });
+  return den === 0 ? 0 : num / den;
+}
+
+function min2(a, b) { return Math.min(a, b); }
+
+function runFIS(hbV, mcvV, mchV, rdwV) {
+  const f = fuzzify(hbV, mcvV, mchV, rdwV);
+  const h = f.hb, m = f.mcv, c = f.mch, r = f.rdw;
+
+  // 12 rules — [activation, outA_level, outB_level, outC_level]
+  const rules = [
+    [min2(min2(min2(h.very_low, m.microcytic), c.low), r.high),      'high',   'low',   'low'],
+    [min2(min2(min2(h.low, m.microcytic), c.low), r.elevated),        'high',   'low',   'low'],
+    [min2(min2(min2(h.low, m.microcytic), c.low), r.normal),          'medium', 'low',   'low'],
+    [min2(min2(h.normal, m.microcytic), r.normal),                    'medium', 'low',   'low'],
+    [min2(min2(min2(h.low, m.normocytic), c.normal), r.normal),       'low',    'high',  'low'],
+    [min2(min2(h.very_low, m.normocytic), r.elevated),                'low',    'high',  'low'],
+    [min2(min2(h.low, m.normocytic), c.normal),                       'low',    'medium','low'],
+    [min2(min2(h.normal, m.normocytic), r.normal),                    'low',    'medium','low'],
+    [min2(min2(m.macrocytic, c.high), r.normal),                      'low',    'low',   'high'],
+    [min2(min2(h.very_low, m.macrocytic), c.high),                    'low',    'low',   'high'],
+    [min2(min2(h.low, m.macrocytic), c.normal),                       'low',    'low',   'medium'],
+    [min2(m.macrocytic, r.elevated),                                  'low',    'low',   'medium'],
+  ];
+
+  // Aggregate
+  const aggA = OUT_RANGE.map(() => 0);
+  const aggB = OUT_RANGE.map(() => 0);
+  const aggC = OUT_RANGE.map(() => 0);
+
+  rules.forEach(([act, la, lb, lc]) => {
+    OUT_RANGE.forEach((x, i) => {
+      aggA[i] = Math.max(aggA[i], Math.min(act, outMF(la, x)));
+      aggB[i] = Math.max(aggB[i], Math.min(act, outMF(lb, x)));
+      aggC[i] = Math.max(aggC[i], Math.min(act, outMF(lc, x)));
+    });
+  });
+
+  return {
+    scoreA: centroid(aggA),
+    scoreB: centroid(aggB),
+    scoreC: centroid(aggC),
+  };
+}
+
+/* ─── Diagnosis UI ─── */
+const DIAGNOSES = {
+  A: {
+    icon: '🔴', cls: 'micro',
+    name: 'Microcytic Anemia',
+    sub: 'Group A — Iron Deficiency / Thalassemia',
+    note: 'Pattern consistent with Microcytic Anemia. Low MCV and MCH with variable RDW suggests iron deficiency (high RDW) or thalassemia trait (normal RDW). Clinical confirmation with serum ferritin and peripheral blood smear recommended.',
+  },
+  B: {
+    icon: '🟠', cls: 'normo',
+    name: 'Normocytic Anemia',
+    sub: 'Group B — Chronic Disease / Acute Blood Loss',
+    note: 'Pattern consistent with Normocytic Anemia. Normal MCV with reduced Hb suggests anemia of chronic disease or acute haemorrhage. Further workup: inflammatory markers (CRP, ESR), reticulocyte count, and clinical history essential.',
+  },
+  C: {
+    icon: '🟡', cls: 'macro',
+    name: 'Macrocytic Anemia',
+    sub: 'Group C — B12 / Folate Deficiency',
+    note: 'Pattern consistent with Macrocytic Anemia. Elevated MCV with high MCH points to megaloblastic aetiology. Recommend serum B12, folate levels, peripheral smear for hypersegmented neutrophils, and reticulocyte index.',
+  },
+};
+
+function runDiagnosis() {
+  const hbV  = parseFloat(document.getElementById('inp-hb').value);
+  const mcvV = parseFloat(document.getElementById('inp-mcv').value);
+  const mchV = parseFloat(document.getElementById('inp-mch').value);
+  const rdwV = parseFloat(document.getElementById('inp-rdw').value);
+
+  if([hbV,mcvV,mchV,rdwV].some(isNaN)) {
+    alert('Please enter valid values for all four CBC parameters.');
+    return;
+  }
+
+  const { scoreA, scoreB, scoreC } = runFIS(hbV, mcvV, mchV, rdwV);
+
+  // Determine winner
+  const scores = { A: scoreA, B: scoreB, C: scoreC };
+  const winner = Object.keys(scores).reduce((a,b) => scores[a] > scores[b] ? a : b);
+  const d = DIAGNOSES[winner];
+
+  // Animate result
+  document.getElementById('result-idle').style.display = 'none';
+
+  const pctA = Math.round(scoreA * 100);
+  const pctB = Math.round(scoreB * 100);
+  const pctC = Math.round(scoreC * 100);
+
+  const card = document.getElementById('result-card');
+  card.classList.add('visible');
+
+  document.getElementById('verdict-icon').textContent = d.icon;
+  document.getElementById('verdict-icon').className   = `verdict-icon ${d.cls}`;
+  document.getElementById('verdict-name').textContent = d.name;
+  document.getElementById('verdict-sub').textContent  = d.sub;
+  document.getElementById('result-clinical-note').textContent = d.note;
+
+  // Bars
+  setTimeout(() => {
+    document.getElementById('score-a-bar').style.width = pctA + '%';
+    document.getElementById('score-b-bar').style.width = pctB + '%';
+    document.getElementById('score-c-bar').style.width = pctC + '%';
+    document.getElementById('score-a-val').textContent = pctA + '%';
+    document.getElementById('score-b-val').textContent = pctB + '%';
+    document.getElementById('score-c-val').textContent = pctC + '%';
+  }, 50);
+
+  // Summary
+  document.getElementById('input-summary').style.display = 'block';
+  document.getElementById('sum-hb').textContent  = hbV  + ' g/dL';
+  document.getElementById('sum-mcv').textContent = mcvV + ' fL';
+  document.getElementById('sum-mch').textContent = mchV + ' pg';
+  document.getElementById('sum-rdw').textContent = rdwV + ' %';
+}
+
+/* ─── Initial nav indicator ─── */
+setTimeout(() => {
+  const activeTab = document.querySelector('.nav-tab[data-page="home"]');
+  if(activeTab) updateIndicator(activeTab);
+}, 200);
+</script>
+
+</body>
+</html>
