@@ -1797,6 +1797,18 @@ footer {
 </head>
 <body>
 
+  <section class="flex flex-col md:flex-row items-center justify-between px-10 py-20 bg-white">
+    <div class="md:w-1/2 mb-10 md:mb-0">
+      <h1 class="text-5xl font-bold text-red-700 mb-4">Anemia FIS</h1>
+      <p class="text-gray-600 text-lg">Detailed analysis of blood health using Fuzzy Inference Systems.</p>
+    </div>
+  
+    <div class="md:w-1/2 flex justify-center">
+      <img src="images/clot_3D.png" 
+           class="w-full max-w-lg transform hover:scale-110 transition-transform duration-500" 
+           alt="3D Blood Clot">
+    </div>
+  </section>
 <!-- Custom Cursor -->
 <div id="cursor" style="display:none;"></div>
 <div id="cursor-ring" style="display:none;"></div>
@@ -1993,7 +2005,7 @@ footer {
         <div class="type-card micro reveal">
           <div class="type-card-bg"></div>
           <span class="type-tag">Group A</span>
-          <span class="type-icon">⌖</span>
+          <span class="type-icon">🔴</span>
           <h3>Microcytic Anemia</h3>
           <h4>Small Red Blood Cells (MCV &lt; 80 fL)</h4>
           <p>Characterised by abnormally small RBCs, typically with low haemoglobin content per cell. The most prevalent form globally, often linked to nutritional or genetic causes.</p>
@@ -2006,7 +2018,7 @@ footer {
         <div class="type-card normo reveal reveal-delay-2">
           <div class="type-card-bg"></div>
           <span class="type-tag">Group B</span>
-          <span class="type-icon">⌖</span>
+          <span class="type-icon">🟠</span>
           <h3>Normocytic Anemia</h3>
           <h4>Normal-Sized RBCs (MCV 80–100 fL)</h4>
           <p>RBCs are normal in size and haemoglobin content, but insufficient in number. Often a secondary manifestation of systemic disease or acute haematological events.</p>
@@ -2019,7 +2031,7 @@ footer {
         <div class="type-card macro reveal reveal-delay-3">
           <div class="type-card-bg"></div>
           <span class="type-tag">Group C</span>
-          <span class="type-icon">⌖</span>
+          <span class="type-icon">🟡</span>
           <h3>Macrocytic Anemia</h3>
           <h4>Large Red Blood Cells (MCV &gt; 100 fL)</h4>
           <p>Characterised by abnormally enlarged RBCs that cannot effectively carry oxygen. Typically results from impaired DNA synthesis affecting cell maturation.</p>
