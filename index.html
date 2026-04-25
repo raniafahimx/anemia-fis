@@ -2395,7 +2395,7 @@ footer {
 ═══════════════════════════════════════════════════════ -->
 <div class="page" id="page-method">
 
-  <div style="padding-top:6rem;background:var(--bg);"></div>
+  <div style="padding-top:1rem;background:var(--bg);"></div>
 
   <div class="method-hero">
     <div class="method-hero-split">
@@ -3015,12 +3015,36 @@ function runDiagnosis() {
   const mchV = parseFloat(document.getElementById('inp-mch').value);
   const rdwV = parseFloat(document.getElementById('inp-rdw').value);
 
+  // 1. Check for empty/non-numeric first
   if([hbV,mcvV,mchV,rdwV].some(isNaN)) {
     alert('Please enter valid values for all four CBC parameters.');
     return;
   }
 
+  // 2. Then validate ranges
+  const RANGES = {
+    hb:  { min: 5,  max: 18,  label: 'Hb (g/dL)' },
+    mcv: { min: 55, max: 125, label: 'MCV (fL)' },
+    mch: { min: 14, max: 42,  label: 'MCH (pg)' },
+    rdw: { min: 10, max: 22,  label: 'RDW (%)' },
+  };
+  const vals = { hb: hbV, mcv: mcvV, mch: mchV, rdw: rdwV };
+  for (const [key, r] of Object.entries(RANGES)) {
+    if (vals[key] < r.min || vals[key] > r.max) {
+      alert(`${r.label} value of ${vals[key]} is outside the valid range (${r.min}–${r.max}). Please enter a realistic value.`);
+      return;
+    }
+  }
+
+  // 3. NOW run FIS (scoreA/B/C exist from here down)
   const { scoreA, scoreB, scoreC } = runFIS(hbV, mcvV, mchV, rdwV);
+
+  // 4. Then check confidence
+  const maxScore = Math.max(scoreA, scoreB, scoreC);
+  if (maxScore < 0.05) {
+    alert('The entered values produced no confident diagnosis. Please check your CBC values.');
+    return;
+  }
 
   // Determine winner
   const scores = { A: scoreA, B: scoreB, C: scoreC };
