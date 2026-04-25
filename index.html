@@ -53,10 +53,6 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════
-   CUSTOM CURSOR — REMOVED
-═══════════════════════════════════════════════════════ */
-
-/* ═══════════════════════════════════════════════════════
    NAVIGATION
 ═══════════════════════════════════════════════════════ */
 nav {
@@ -69,6 +65,10 @@ nav {
   justify-content: space-between;
   transition: background 0.4s var(--ease-out), backdrop-filter 0.4s;
 }
+.nav-tab:focus { outline: none; }
+.nav-cta:focus { outline: none; }
+
+   
 nav.scrolled {
   background: rgba(253,250,249,0.92);
   backdrop-filter: blur(20px);
