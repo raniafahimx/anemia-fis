@@ -1794,6 +1794,14 @@ footer {
   .symptoms-section { padding: 4rem 1.5rem; }
   .prevalence-section { padding: 4rem 1.5rem; }
 }
+/* Add this at the very bottom of your style block */
+body > div:first-of-type:not(.page):not(.hero):not(.nav-mobile) {
+    display: none !important;
+}
+
+body > button:not(.nav-cta):not(.nav-hamburger) {
+    display: none !important;
+}
 </style>
 </head>
 <body>
