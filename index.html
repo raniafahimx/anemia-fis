@@ -1049,7 +1049,11 @@ nav.scrolled .nav-hamburger span { background: var(--maroon); }
    PAGE 2 — DIAGNOSTIC TOOL
 ═══════════════════════════════════════════════════════ */
 .tool-header {
-  padding: 18rem 3rem 3rem;
+  min-height: 60vh; /* This makes it cover 60% of the viewport height */
+  display: flex;
+  align-items: center; /* Centers the text vertically */
+  justify-content: center;
+  padding: 3rem; /* Adjusted padding since min-height is doing the work */
   background: linear-gradient(180deg, var(--dark-maroon) 0%, var(--maroon) 100%);
   position: relative;
   overflow: hidden;
